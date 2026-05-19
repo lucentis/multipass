@@ -3,5 +3,12 @@ import { Button } from './components/ui/button'
 </script>
 
 <template>
-  <Button>test</Button>
+  <div class="main h-dvh flex flex-col">
+    <div class="nav"></div>
+    <main class="grow"></main>
+    <div class="bottom-nav">
+      <Button>Aceuil</Button>
+      <Button>Progression</Button>
+    </div>
+  </div>
 </template>
