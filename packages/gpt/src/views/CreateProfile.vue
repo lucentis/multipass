@@ -1,3 +1,5 @@
+<!-- src/views/CreateProfileView.vue -->
+
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { ArrowLeft } from 'lucide-vue-next'
@@ -9,8 +11,6 @@ import { AVATARS } from '@/constants/avatars'
 
 import { useAppStore } from '@/stores/app.store'
 import { useProfileStore } from '@/stores/profile.store'
-
-import AvatarPicker from '@/components/profile/AvatarPicker.vue'
 
 const appStore = useAppStore()
 const profileStore = useProfileStore()
@@ -37,71 +37,115 @@ function handleCreateProfile() {
 
 <template>
   <div
-    class="min-h-screen bg-[#FCFAFF] px-6 py-8"
+    class="flex min-h-screen items-center justify-center bg-[#F6F7FB] p-4"
   >
     <div
-      class="mx-auto max-w-md"
+      class="relative w-full max-w-[900px] overflow-hidden rounded-[40px] bg-white shadow-[0_25px_60px_rgba(15,23,42,0.08)]"
     >
-      <!-- Back -->
-      <button
-        @click="
-          appStore.navigate(
-            'profiles',
-          )
-        "
-        class="mb-8 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm"
-      >
-        <ArrowLeft
-          class="h-5 w-5 text-slate-600"
-        />
-      </button>
+      <div
+        class="absolute right-[-60px] top-[-40px] h-40 w-40 rounded-full bg-violet-100 blur-3xl opacity-50"
+      />
 
-      <!-- Hero -->
-      <div class="text-center">
-        <div
-          class="mx-auto flex h-44 w-44 items-center justify-center rounded-[50px] bg-violet-100 text-[88px] shadow-sm"
+      <div
+        class="px-6 py-8 sm:px-10 sm:py-10"
+      >
+        <!-- Back -->
+        <button
+          @click="
+            appStore.navigate(
+              'profiles',
+            )
+          "
+          class="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 transition hover:bg-slate-200"
         >
-          {{ selectedAvatar }}
+          <ArrowLeft
+            class="h-5 w-5 text-slate-700"
+          />
+        </button>
+
+        <div
+          class="mt-4 text-center"
+        >
+          <!-- Avatar -->
+          <div
+            class="mx-auto flex h-36 w-36 items-center justify-center rounded-[32px] bg-violet-100 text-[80px]"
+          >
+            {{ selectedAvatar }}
+          </div>
+
+          <h1
+            class="mt-6 text-4xl font-black text-slate-800"
+          >
+            Nouveau profil
+          </h1>
+
+          <p
+            class="mt-2 text-slate-500"
+          >
+            Choisis un avatar et
+            un prénom
+          </p>
         </div>
 
-        <h1
-          class="mt-8 text-[40px] font-black leading-tight text-slate-800"
+        <div
+          class="mx-auto mt-10 max-w-md"
         >
-          Nouveau profil
-        </h1>
+          <!-- Name -->
+          <label
+            class="mb-2 block text-sm font-semibold text-slate-700"
+          >
+            Prénom
+          </label>
 
-        <p
-          class="mt-3 text-lg text-slate-400"
-        >
-          Choisis ton nouvel ami
-        </p>
+          <Input
+            v-model="profileName"
+            placeholder="Ex: Léa"
+            class="h-14 rounded-[20px] border-slate-200 bg-slate-50 px-5 text-base"
+          />
+
+          <!-- Avatars -->
+          <div class="mt-8">
+            <label
+              class="mb-4 block text-sm font-semibold text-slate-700"
+            >
+              Choisis un avatar
+            </label>
+
+            <div
+              class="grid grid-cols-4 gap-3"
+            >
+              <button
+                v-for="avatar in AVATARS"
+                :key="avatar"
+                @click="
+                  selectedAvatar =
+                    avatar
+                "
+                class="flex h-16 w-16 items-center justify-center rounded-[22px] border bg-white text-3xl shadow-sm transition-all duration-200 hover:-translate-y-0.5"
+                :class="
+                  selectedAvatar ===
+                  avatar
+                    ? 'border-violet-300 bg-violet-50 ring-2 ring-violet-200'
+                    : 'border-slate-100'
+                "
+              >
+                {{ avatar }}
+              </button>
+            </div>
+          </div>
+
+          <!-- CTA -->
+          <Button
+            :disabled="!canCreate"
+            @click="
+              handleCreateProfile
+            "
+            class="mt-10 h-14 w-full rounded-[22px] bg-violet-500 text-base font-semibold hover:bg-violet-600"
+          >
+            Créer mon profil ✨
+          </Button>
+        </div>
       </div>
-
-      <!-- Picker -->
-      <div class="mt-10">
-        <AvatarPicker
-          v-model="selectedAvatar"
-          :avatars="AVATARS"
-        />
-      </div>
-
-      <!-- Name -->
-      <div class="mt-10">
-        <Input
-          v-model="profileName"
-          placeholder="Ton prénom"
-          class="h-16 rounded-[24px] border-0 bg-white px-6 text-lg shadow-[0_8px_24px_rgba(15,23,42,0.05)] placeholder:text-slate-300 focus-visible:ring-violet-200"
-        />
-      </div>
-
-      <!-- CTA -->
-      <Button
-        :disabled="!canCreate"
-        @click="handleCreateProfile"
-        class="mt-8 h-16 w-full rounded-[28px] bg-violet-500 text-lg font-semibold shadow-lg shadow-violet-200 hover:bg-violet-600"
-      >
-        Créer mon profil ✨
-      </Button>
     </div>
   </div>
 </template>

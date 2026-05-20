@@ -1,3 +1,5 @@
+<!-- src/components/profile/ProfileCard.vue -->
+
 <script setup lang="ts">
 import type { Profile } from '@/types/profile'
 
@@ -13,43 +15,30 @@ const emit = defineEmits<{
 <template>
   <button
     @click="emit('select')"
-    class="group w-full overflow-hidden rounded-[42px] bg-white p-5 text-left shadow-[0_8px_30px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,23,42,0.08)] active:scale-[0.98]"
+    class="group w-full rounded-[28px] border border-violet-100 bg-white p-4 text-left shadow-sm transition-all duration-200 hover:border-violet-200 hover:shadow-md"
   >
-    <div class="flex items-center gap-5">
-      <!-- Avatar -->
-      <div
-        class="flex h-28 w-28 shrink-0 items-center justify-center rounded-[34px] bg-violet-100 text-[64px] transition-transform duration-300 group-hover:scale-105"
-      >
+    <div class="flex flex-col items-center gap-4">
+      <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-violet-100 text-[42px]">
         {{ profile.avatar }}
       </div>
 
-      <!-- Content -->
-      <div class="min-w-0 flex-1">
-        <h2
-          class="truncate text-[28px] font-bold tracking-tight text-slate-800"
-        >
+        <h3 class="truncate text-xl font-bold text-slate-800">
           {{ profile.name }}
-        </h2>
+        </h3>
 
-        <p
-          class="mt-1 text-base text-slate-400"
-        >
-          {{ profile.xp }} XP
-        </p>
+        <div class="mt-1 flex items-center gap-2 text-sm text-slate-500">
+          <span>⭐</span>
+          <span>{{ profile.xp }} XP</span>
+        </div>
 
-        <div class="mt-5">
+        <div class="mt-3 h-2 overflow-hidden rounded-full bg-violet-100 w-4/5">
           <div
-            class="h-3 overflow-hidden rounded-full bg-violet-100"
-          >
-            <div
-              class="h-full rounded-full bg-teal-300 transition-all duration-500"
-              :style="{
-                width: `${Math.min(profile.xp, 100)}%`,
-              }"
-            />
-          </div>
+            class="h-2 rounded-full bg-teal-300 transition-all duration-500"
+            :style="{
+              width: `${1000 / profile.xp}%`,
+            }"
+          />
         </div>
       </div>
-    </div>
   </button>
 </template>
