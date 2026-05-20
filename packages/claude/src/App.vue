@@ -1,30 +1,51 @@
-<script setup>
-import { computed } from 'vue'
-import { useSessionStore } from '@/stores/session.store'
-import ProfileSelect from '@/views/ProfileSelect.vue'
-import ProfileCreate from '@/views/ProfileCreate.vue'
-import Dashboard from '@/views/Dashboard.vue'
-import Practice from '@/views/Practice.vue'
-import Discover from '@/views/Discover.vue'
-import Recap from '@/views/Recap.vue'
-import Progress from '@/views/Progress.vue'
+<script setup lang="ts">
+import { storeToRefs } from 'pinia'
 
-const session = useSessionStore()
-const tab = computed(() => session.currentTab)
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+} from '@/components/ui/tabs'
+
+import { useAppStore } from '@/stores/app.store'
+
+import DashboardView from '@/views/Dashboard.vue'
+import CreateProfileView from '@/views/CreateProfile.vue'
+import ProfileSelectionView from '@/views/ProfileSelection.vue'
+
+const appStore = useAppStore()
+
+const { currentScreen } =
+  storeToRefs(appStore)
 </script>
 
 <template>
-  <div class="min-h-screen bg-background font-sans antialiased">
-    <div class="max-w-md mx-auto min-h-screen flex flex-col">
-      <ProfileSelect v-if="tab === 'profile'" />
-      <ProfileCreate v-else-if="tab === 'profile-create'" />
-      <template v-else>
-        <Dashboard v-if="tab === 'dashboard'" />
-        <Practice v-else-if="tab === 'practice'" />
-        <Discover v-else-if="tab === 'discover'" />
-        <Recap v-else-if="tab === 'recap'" />
-        <Progress v-else-if="tab === 'progress'" />
-      </template>
-    </div>
-  </div>
+  <main class="min-h-screen bg-slate-50">
+    <Tabs
+      v-model="currentScreen"
+    >
+      <TabsList class="hidden" />
+
+      <TabsContent
+        value="profiles"
+        class="m-0"
+      >
+        <ProfileSelectionView />
+      </TabsContent>
+
+      <TabsContent
+        value="create-profile"
+        class="m-0"
+      >
+        <CreateProfileView />
+      </TabsContent>
+
+      <TabsContent
+        value="dashboard"
+        class="m-0"
+      >
+        <DashboardView />
+      </TabsContent>
+    </Tabs>
+  </main>
 </template>
