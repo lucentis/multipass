@@ -2,9 +2,11 @@
 import { ref } from 'vue'
 import { useProfilesStore } from '@/stores/profiles.store'
 import { useAppStore } from '@/stores/app.store'
+import { useProgressStore } from '@/stores/progress.store'
 
 const profilesStore = useProfilesStore()
 const appStore = useAppStore()
+const progression = useProgressStore()
 
 const AVATARS = [
   '🦊', '🐸', '🐼', '🐨', '🦁', '🐯',
@@ -23,6 +25,7 @@ function create(): void {
   }
   const profile = profilesStore.add(name.value.trim(), avatar.value)
   profilesStore.select(profile.id)
+  progression.init(profile.id)
   appStore.navigate('dashboard')
 
 }

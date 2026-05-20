@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { useProfilesStore } from '@/stores/profiles.store'
 import { useAppStore } from '@/stores/app.store'
+import { useProgressStore } from '@/stores/progress.store'
  
 const profilesStore = useProfilesStore()
 const appStore = useAppStore()
+const progression = useProgressStore()
 
 function selectProfile(id: string): void {
   profilesStore.select(id)
-
+  progression.init(id)
   appStore.navigate('dashboard')
 }
  

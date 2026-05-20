@@ -1,8 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { TABLE_ORDER, computeStars } from '@/utils/multiplication'
 
-function defaultTableState(unlocked = false) {
+import type { ProfileProgress, TableProgress } from '@/types/progress'
+
+// Unlock order — easiest tables first
+const TABLE_ORDER = [1, 2, 5, 10, 3, 4, 6, 7, 8, 9]
+
+function defaultTableState(unlocked = false): TableProgress {
   return {
     unlocked,
     discovered: false,
@@ -14,11 +18,19 @@ function defaultTableState(unlocked = false) {
   }
 }
 
-export const useProgressStore = defineStore('progress', () => {
-  // { [profileId]: { [tableNumber]: tableState } }
-  const data = ref({})
+function computeStars(successRate: number): 0 | 1 | 2 | 3 {
+  if (successRate >= 0.9) return 3
+  if (successRate >= 0.7) return 2
+  if (successRate >= 0.5) return 1
+  return 0
+}
 
-  function initProfile(profileId) {
+// Shape: { [profileId]: ProfileProgress }
+export const useProgressStore = defineStore('progress', () => {
+  const data = ref<Record<string, ProfileProgress>>({})
+
+  // Called once when a profile is first selected
+  function init(profileId: string): void {
     if (data.value[profileId]) return
     data.value[profileId] = {}
     TABLE_ORDER.forEach((table, index) => {
@@ -26,25 +38,31 @@ export const useProgressStore = defineStore('progress', () => {
     })
   }
 
-  function getTable(profileId, tableNumber) {
+  function getTable(profileId: string, tableNumber: number): TableProgress | null {
     return data.value[profileId]?.[tableNumber] ?? null
   }
 
-  function getAllTables(profileId) {
+  function getAllTables(profileId: string): Array<TableProgress & { number: number }> {
     return TABLE_ORDER.map(n => ({
       number: n,
       ...(data.value[profileId]?.[n] ?? defaultTableState()),
     }))
   }
 
-  function markDiscovered(profileId, tableNumber) {
+  function markDiscovered(profileId: string, tableNumber: number): void {
     const entry = data.value[profileId]?.[tableNumber]
     if (!entry) return
     entry.discovered = true
-    _unlockNext(profileId, tableNumber)
+    unlockNext(profileId, tableNumber)
   }
 
-  function recordSession(profileId, tableNumber, correct, total, sessionBestStreak) {
+  function recordSession(
+    profileId: string,
+    tableNumber: number,
+    correct: number,
+    total: number,
+    sessionBestStreak: number,
+  ): void {
     const entry = data.value[profileId]?.[tableNumber]
     if (!entry) return
 
@@ -57,10 +75,10 @@ export const useProgressStore = defineStore('progress', () => {
       entry.bestStreak = sessionBestStreak
     }
 
-    _unlockNext(profileId, tableNumber)
+    unlockNext(profileId, tableNumber)
   }
 
-  function _unlockNext(profileId, tableNumber) {
+  function unlockNext(profileId: string, tableNumber: number): void {
     const idx = TABLE_ORDER.indexOf(tableNumber)
     if (idx === -1 || idx >= TABLE_ORDER.length - 1) return
     const next = TABLE_ORDER[idx + 1]
@@ -69,7 +87,7 @@ export const useProgressStore = defineStore('progress', () => {
     }
   }
 
-  function getStats(profileId) {
+  function getStats(profileId: string) {
     const tables = getAllTables(profileId)
     return {
       totalStars: tables.reduce((sum, t) => sum + t.stars, 0),
@@ -80,7 +98,8 @@ export const useProgressStore = defineStore('progress', () => {
 
   return {
     data,
-    initProfile,
+    TABLE_ORDER,
+    init,
     getTable,
     getAllTables,
     markDiscovered,
