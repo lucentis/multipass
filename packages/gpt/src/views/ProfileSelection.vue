@@ -24,8 +24,8 @@ function handleProfileSelect(
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-[#F6F7FB] p-4">
-    <div class="relative w-full max-w-[900px] overflow-hidden rounded-[40px] bg-white shadow-[0_25px_60px_rgba(15,23,42,0.08)]">
+  <div class=" bg-[#F6F7FB] p-4">
+    <div class="relative min-h-[calc(100vh-2rem)] overflow-hidden rounded-[40px] bg-white shadow-[0_25px_60px_rgba(15,23,42,0.08)]">
       <!-- Clouds -->
       <div class="absolute left-[-80px] top-10 h-40 w-40 rounded-full bg-violet-100 blur-lg"/>
 
@@ -52,7 +52,7 @@ function handleProfileSelect(
         </div>
 
         <!-- Profiles -->
-        <div class="mt-12 grid grid-cols-3 gap-4 md:grid-cols-4"
+        <div class="mt-12 grid grid-cols-2 gap-4 md:grid-cols-4"
 >
           <ProfileCard
             v-for="profile in profiles"

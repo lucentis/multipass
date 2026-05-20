@@ -23,7 +23,6 @@ const { currentScreen } =
   <main class="min-h-screen bg-slate-50">
     <Tabs
       v-model="currentScreen"
-      class="min-h-screen"
     >
       <TabsList class="hidden" />
 
