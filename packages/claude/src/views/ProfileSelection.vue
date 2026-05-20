@@ -1,86 +1,60 @@
-<!-- src/views/ProfileSelectionView.vue -->
-
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { Plus } from 'lucide-vue-next'
-
+import { useProfilesStore } from '@/stores/profiles.store'
 import { useAppStore } from '@/stores/app.store'
-import { useProfileStore } from '@/stores/profile.store'
-import ProfileCard from '../components/profile/ProfileCard.vue';
-
+ 
+const profilesStore = useProfilesStore()
 const appStore = useAppStore()
-const profileStore = useProfileStore()
 
-const { profiles } =
-  storeToRefs(profileStore)
-
-function handleProfileSelect(
-  profileId: string,
-) {
-  profileStore.selectProfile(profileId)
+function selectProfile(id: string): void {
+  profilesStore.select(id)
 
   appStore.navigate('dashboard')
 }
+ 
+function xpToPercent(xp: number): number {
+  return Math.min((xp / 500) * 100, 100)
+}
 </script>
-
+ 
 <template>
-  <div class="h-screen bg-[#F6F7FB] p-4">
-    <div class="relative min-h-[calc(100vh-2rem)] overflow-hidden rounded-[40px] bg-white shadow-[0_25px_60px_rgba(15,23,42,0.08)]">
-      <!-- Clouds -->
-      <div class="absolute left-[-80px] top-10 h-40 w-40 rounded-full bg-violet-100 blur-lg"/>
-
-      <div class="absolute bottom-0 right-[-80px] h-48 w-48 rounded-full bg-pink-100 blur-lg"/>
-
-      <div class="relative z-10 px-6 py-10 sm:px-10 sm:py-12">
-        <!-- Header -->
-        <div class="text-center space-y-2">
-          <div class="flex items-center justify-center gap-2">
-            <div class="flex items-center justify-center rounded-full text-3xl">
-              👋
-            </div>
-            <h1 class="text-4xl font-black tracking-tight text-slate-800 sm:text-3xl">
-              Bonjour !
-            </h1>
-          </div>
-
-          <p class="mt-1 text-lg text-slate-500">
-            Choisis ton profil pour
-            continuer
-          </p>
-
-        </div>
-
-        <!-- Profiles -->
-        <div class="mt-12 grid grid-cols-3 gap-4 md:grid-cols-4"
->
-          <ProfileCard
-            v-for="profile in profiles"
-            :key="profile.id"
-            @select="handleProfileSelect(profile.id)"
-            :profile="profile"
-          >
-            
-          </ProfileCard>
-
-          <!-- New Profile -->
-          <button
-            @click="appStore.navigate('create-profile')"
-            class="rounded-[28px] border-[2px] border-dashed border-violet-200 bg-violet-50 p-4 transition hover:bg-violet-100 hover:border-violet-200"
-          >
-            <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-[24px] bg-white">
-              <Plus class="h-10 w-10 text-violet-500"/>
-            </div>
-
-            <h3 class="mt-4 text-lg font-bold text-slate-800">
-              Nouveau
-            </h3>
-
-            <p class="mt-1 text-sm text-slate-500">
-              Ajouter un profil
-            </p>
-          </button>
-        </div>
-      </div>
+  <div class="flex flex-col flex-1 p-6">
+ 
+    <div class="text-center py-8">
+      <p class="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">
+        multibul
+      </p>
+      <h1 class="text-xl font-medium text-foreground mb-1">Qui joue aujourd'hui ?</h1>
+      <p class="text-sm text-muted-foreground">Choisis ton profil</p>
     </div>
+ 
+    <div class="grid grid-cols-3 gap-3">
+      <button
+        v-for="profile in profilesStore.profiles"
+        :key="profile.id"
+        @click="selectProfile(profile.id)"
+        class="flex flex-col items-center p-4 bg-background border border-border rounded-xl hover:border-teal-400 transition-colors text-left"
+      >
+        <span class="text-4xl leading-none mb-3">{{ profile.avatar }}</span>
+        <p class="font-medium text-sm text-foreground mb-2.5 truncate w-full text-center">
+          {{ profile.name }}
+        </p>
+        <div class="w-full bg-muted rounded-full h-1 mb-1">
+          <div
+            class="bg-teal-500 h-1 rounded-full transition-all"
+            :style="{ width: xpToPercent(profile.xp) + '%' }"
+          />
+        </div>
+        <span class="text-xs text-muted-foreground">{{ profile.xp }} xp</span>
+      </button>
+ 
+      <button
+        @click="appStore.navigate('create-profile')"
+        class="flex flex-col items-center justify-center gap-2 p-4 bg-muted border border-dashed border-border rounded-xl hover:border-teal-400 transition-colors min-h-[130px]"
+      >
+        <span class="text-2xl text-muted-foreground">＋</span>
+        <span class="text-xs text-muted-foreground">Nouveau</span>
+      </button>
+    </div>
+ 
   </div>
 </template>

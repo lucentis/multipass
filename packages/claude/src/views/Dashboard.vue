@@ -3,9 +3,9 @@ import { storeToRefs } from 'pinia'
 
 import { Card } from '@/components/ui/card'
 
-import { useProfileStore } from '@/stores/profile.store'
+import { useProfilesStore } from '@/stores/profiles.store'
 
-const profileStore = useProfileStore()
+const profileStore = useProfilesStore()
 
 const { currentProfile } =
   storeToRefs(profileStore)
