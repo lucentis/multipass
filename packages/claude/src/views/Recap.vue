@@ -1,18 +1,18 @@
 <script setup>
 import { computed } from 'vue'
-import { useSessionStore } from '@/stores/session.store'
+import { useAppStore } from '@/stores/app.store'
 import { useProgressStore } from '@/stores/progress.store'
 import { useProfilesStore } from '@/stores/profiles.store'
-import { generateQuestions, computeXp } from '@/utils/multiplication'
+import { useGameStore } from '@/stores/game.store'
 import { Button } from '@/components/ui/button'
 import StarRating from '@/components/StarRating.vue'
 
-const sessionStore = useSessionStore()
+const gameStore = useGameStore()
 const progressStore = useProgressStore()
 const profilesStore = useProfilesStore()
 
-const tableNumber = computed(() => sessionStore.practiceTable)
-const summary = computed(() => sessionStore.sessionSummary)
+const tableNumber = computed(() => gameStore.tableNumber)
+const summary = computed(() => gameStore.summary)
 
 const successRate = computed(() => summary.value.correct / summary.value.total)
 
@@ -31,15 +31,15 @@ const feedback = computed(() => {
   return { emoji: '💪', title: 'On va y arriver !' }
 })
 
-const xpGained = computed(() => computeXp(summary.value.correct))
+const xpGained = computed(() => summary.value.correct * 10)
 
 function replay() {
-  sessionStore.startSession(generateQuestions(tableNumber.value))
-  sessionStore.navigateTo('practice', { practiceTable: tableNumber.value })
+  gameStore.startPractice()
+  appStore.navigateTo('practice')
 }
 
 function goHome() {
-  sessionStore.navigateTo('dashboard')
+  appStore.navigateTo('dashboard')
 }
 </script>
 

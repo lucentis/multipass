@@ -9,9 +9,11 @@ import {
 
 import { useAppStore } from '@/stores/app.store'
 
-import DashboardView from '@/views/Dashboard.vue'
-import CreateProfileView from '@/views/CreateProfile.vue'
-import ProfileSelectionView from '@/views/ProfileSelection.vue'
+import Dashboard from '@/views/Dashboard.vue'
+import CreateProfile from '@/views/CreateProfile.vue'
+import ProfileSelection from '@/views/ProfileSelection.vue'
+import Practice from '@/views/Practice.vue'
+import Recap from '@/views/Recap.vue'
 
 const appStore = useAppStore()
 
@@ -30,21 +32,35 @@ const { currentScreen } =
         value="profiles"
         class="m-0"
       >
-        <ProfileSelectionView />
+        <ProfileSelection />
       </TabsContent>
 
       <TabsContent
         value="create-profile"
         class="m-0"
       >
-        <CreateProfileView />
+        <CreateProfile />
       </TabsContent>
 
       <TabsContent
         value="dashboard"
         class="m-0"
       >
-        <DashboardView />
+        <Dashboard />
+      </TabsContent>
+
+      <TabsContent
+        value="practice"
+        class="m-0"
+      >
+        <Practice />
+      </TabsContent>
+
+      <TabsContent
+        value="recap"
+        class="m-0"
+      >
+        <Recap />
       </TabsContent>
     </Tabs>
   </main>

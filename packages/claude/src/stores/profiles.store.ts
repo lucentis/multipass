@@ -37,8 +37,12 @@ export const useProfilesStore = defineStore('profiles', () => {
   function select(id: string): void {
     activeProfileId.value = id
   }
+
+  function addXp(xp: number) {
+    activeProfile.value.xp += xp
+  }
  
-  return { profiles, activeProfileId, activeProfile, add, remove, update, select }
+  return { profiles, activeProfileId, activeProfile, add, remove, update, select, addXp }
 }, {
   persist: true,
 })

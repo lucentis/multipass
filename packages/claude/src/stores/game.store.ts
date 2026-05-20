@@ -1,44 +1,66 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
+import type { Question, Answer, DiscoverExample, SessionSummary } from '@/types/game'
+import { generateQuestions, generateDiscoverExamples } from '@/utils/multiplication'
+
 export const useGameStore = defineStore('game', () => {
-  const tableNumber = ref(null)
-  const questions = ref([])
+  // Shared
+  const tableNumber = ref<number | null>(null)
+
+  // Practice
+  const questions = ref<Question[]>([])
   const currentIndex = ref(0)
-  const answers = ref([])
+  const answers = ref<Answer[]>([])
   const streak = ref(0)
   const bestStreak = ref(0)
 
-  const currentQuestion = computed(() => questions.value[currentIndex.value] ?? null)
+  // Discover
+  const examples = ref<DiscoverExample[]>([])
+  const discoverIndex = ref(0)
 
-  const isComplete = computed(
-    () => questions.value.length > 0 && currentIndex.value >= questions.value.length
+  // Practice computed
+  const currentQuestion = computed<Question | null>(
+    () => questions.value[currentIndex.value] ?? null,
   )
 
-  // { correct, total, missed: [{ label, answer }], bestStreak }
-  const summary = computed(() => {
-    const correct = answers.value.filter(a => a.correct).length
-    const total = answers.value.length
-    const missed = answers.value
-      .filter(a => !a.correct)
-      .map(a => ({ label: `${a.question.a} × ${a.question.b}`, answer: a.question.answer }))
-    return { correct, total, missed, bestStreak: bestStreak.value }
-  })
+  const isComplete = computed(
+    () => questions.value.length > 0 && currentIndex.value >= questions.value.length,
+  )
 
-  function start(table, questionList) {
+  const summary = computed<SessionSummary>(() => ({
+    correct: answers.value.filter(a => a.correct).length,
+    total: answers.value.length,
+    missed: answers.value
+      .filter(a => !a.correct)
+      .map(a => ({ label: `${a.question.a} × ${a.question.b}`, answer: a.question.answer })),
+    bestStreak: bestStreak.value,
+  }))
+
+  // Discover computed
+  const currentExample = computed<DiscoverExample | null>(
+    () => examples.value[discoverIndex.value] ?? null,
+  )
+
+  const isDiscoverComplete = computed(
+    () => examples.value.length > 0 && discoverIndex.value >= examples.value.length,
+  )
+
+  // Actions
+  function startPractice(table: number): void {
     tableNumber.value = table
-    questions.value = questionList
+    questions.value = generateQuestions(table)
     currentIndex.value = 0
     answers.value = []
     streak.value = 0
     bestStreak.value = 0
   }
 
-  function submitAnswer(userAnswer, usedHint) {
+  function submitAnswer(userAnswer: number, usedHint: boolean): void {
     const question = questions.value[currentIndex.value]
     if (!question) return
 
-    const correct = parseInt(userAnswer, 10) === question.answer
+    const correct = userAnswer === question.answer
 
     answers.value.push({ question, userAnswer, correct, usedHint })
 
@@ -52,13 +74,25 @@ export const useGameStore = defineStore('game', () => {
     currentIndex.value++
   }
 
-  function reset() {
+  function startDiscover(table: number): void {
+    tableNumber.value = table
+    examples.value = generateDiscoverExamples(table)
+    discoverIndex.value = 0
+  }
+
+  function nextDiscover(): void {
+    discoverIndex.value++
+  }
+
+  function reset(): void {
     tableNumber.value = null
     questions.value = []
     currentIndex.value = 0
     answers.value = []
     streak.value = 0
     bestStreak.value = 0
+    examples.value = []
+    discoverIndex.value = 0
   }
 
   return {
@@ -68,11 +102,17 @@ export const useGameStore = defineStore('game', () => {
     answers,
     streak,
     bestStreak,
+    examples,
+    discoverIndex,
     currentQuestion,
     isComplete,
     summary,
-    start,
+    currentExample,
+    isDiscoverComplete,
+    startPractice,
     submitAnswer,
+    startDiscover,
+    nextDiscover,
     reset,
   }
 })

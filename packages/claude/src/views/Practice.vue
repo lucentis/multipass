@@ -1,100 +1,95 @@
-<script setup>
-import { ref, computed, watch } from 'vue'
-import { useSessionStore } from '@/stores/session.store'
+<script setup lang="ts">
+import { ref, watch, onMounted } from 'vue'
+
+import { useAppStore } from '@/stores/app.store'
+import { useGameStore } from '@/stores/game.store'
 import { useProfilesStore } from '@/stores/profiles.store'
 import { useProgressStore } from '@/stores/progress.store'
-import { generateHints, computeXp } from '@/utils/multiplication'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { generateHints } from '@/utils/multiplication'
 
-const sessionStore = useSessionStore()
+const appStore = useAppStore()
+const gameStore = useGameStore()
 const profilesStore = useProfilesStore()
 const progressStore = useProgressStore()
 
-const tableNumber = computed(() => sessionStore.practiceTable)
-const question = computed(() => sessionStore.currentQuestion)
-const questionIndex = computed(() => sessionStore.currentQuestionIndex)
-const streak = computed(() => sessionStore.currentStreak)
+// Practice.vue owns session init — Dashboard only sets gameStore.tableNumber
+onMounted(() => {
+  if (gameStore.tableNumber !== null) {
+    gameStore.startPractice(gameStore.tableNumber)
+  }
+})
 
-// UI state per question
-const userInput = ref('')
-const status = ref('idle')       // idle | correct | wrong
+// Per-question UI state — reset whenever the question index advances
+const inputValue = ref('')
 const showHint = ref(false)
-const hintOptions = ref([])
-const selectedHint = ref(null)
+const hintOptions = ref<number[]>([])
+const selectedHint = ref<number | null>(null)
 const usedHint = ref(false)
+const status = ref<'idle' | 'correct' | 'wrong'>('idle')
 
-// Reset state on each new question
-watch(question, () => {
-  userInput.value = ''
-  status.value = 'idle'
-  showHint.value = false
-  hintOptions.value = []
-  selectedHint.value = null
-  usedHint.value = false
-}, { immediate: true })
-
-function openHint() {
-  if (!question.value) return
-  hintOptions.value = generateHints(question.value.answer)
+function openHint(): void {
+  if (!gameStore.currentQuestion) return
+  hintOptions.value = generateHints(gameStore.currentQuestion.answer)
   showHint.value = true
   usedHint.value = true
 }
 
-function selectHint(option) {
+function selectHint(option: number): void {
   selectedHint.value = option
-  userInput.value = String(option)
+  inputValue.value = String(option)
 }
 
-function closeHint() {
+function closeHint(): void {
   showHint.value = false
   selectedHint.value = null
+  inputValue.value = ''
 }
 
-function submit() {
-  if (!question.value || !userInput.value.trim()) return
-  const parsed = parseInt(userInput.value, 10)
-  const correct = parsed === question.value.answer
-  status.value = correct ? 'correct' : 'wrong'
-  sessionStore.recordAnswer(parsed, correct, usedHint.value)
+function submit(): void {
+  if (!inputValue.value) return
+  const value = parseInt(inputValue.value, 10)
+  gameStore.submitAnswer(value, usedHint.value)
+  status.value = gameStore.answers.at(-1)?.correct ? 'correct' : 'wrong'
 }
 
-function next() {
-  if (sessionStore.isSessionComplete) {
-    // Persist results then go to recap
-    const { correct, total, bestStreak: bs } = sessionStore.sessionSummary
-    const profileId = profilesStore.activeProfileId
-    progressStore.recordSession(profileId, tableNumber.value, correct, total, bs)
-    profilesStore.addXp(profileId, computeXp(correct))
-    sessionStore.navigateTo('recap')
+function next(): void {
+  console.log('next called')
+  if (gameStore.isComplete) {
+    const { correct, total, bestStreak } = gameStore.summary
+    const profileId = profilesStore.activeProfile!.id
+    progressStore.recordSession(profileId, gameStore.tableNumber!, correct, total, bestStreak)
+    profilesStore.addXp(correct * 10)
+    appStore.navigate('recap')
   } else {
     status.value = 'idle'
+    inputValue.value = ''
+    showHint.value = false
+    hintOptions.value = []
+    selectedHint.value = null
+    usedHint.value = false
   }
-}
-
-function goBack() {
-  sessionStore.navigateTo('dashboard')
 }
 </script>
 
 <template>
-  <div class="flex flex-col min-h-screen">
+  <div class="flex min-h-screen flex-col">
+
     <!-- Header -->
-    <div class="flex items-center justify-between px-4 py-3 border-b border-border">
+    <div class="flex items-center justify-between border-b border-border px-4 py-3">
       <button
-        @click="goBack"
-        class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        @click="appStore.navigate('dashboard')"
+        class="text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         ← Retour
       </button>
-      <p class="text-sm font-medium text-foreground">Table de ×{{ tableNumber }}</p>
+      <p class="text-sm font-medium text-foreground">Table de ×{{ gameStore.tableNumber }}</p>
       <div class="flex items-center gap-1.5">
-        <span class="text-base">🔥</span>
-        <span class="text-sm font-medium text-muted-foreground">{{ streak }}</span>
+        <span>🔥</span>
+        <span class="text-sm font-medium text-muted-foreground">{{ gameStore.streak }}</span>
       </div>
     </div>
 
-    <div class="flex-1 p-4 flex flex-col gap-6">
+    <div class="flex flex-1 flex-col gap-6 p-4">
 
       <!-- Progress dots -->
       <div class="flex items-center justify-center gap-1.5 pt-2">
@@ -102,56 +97,63 @@ function goBack() {
           v-for="i in 10"
           :key="i"
           :class="[
-            'w-2 h-2 rounded-full transition-colors',
-            i - 1 < questionIndex
+            'h-2 w-2 rounded-full transition-colors',
+            i - 1 < gameStore.currentIndex
               ? 'bg-teal-500'
-              : i - 1 === questionIndex
-                ? 'bg-teal-300 border border-teal-400'
-                : 'bg-muted border border-border',
+              : i - 1 === gameStore.currentIndex
+                ? 'border border-teal-400 bg-teal-200'
+                : 'border border-border bg-muted',
           ]"
         />
       </div>
 
       <!-- Question -->
-      <div class="text-center py-4">
-        <p class="text-sm text-muted-foreground mb-3">Combien font…</p>
-        <p class="text-5xl font-medium text-foreground tracking-tight">
-          {{ question?.a }} × {{ question?.b }} = ?
+      <div class="py-4 text-center" v-if="status === 'idle'">
+        <p class="mb-3 text-sm text-muted-foreground">Combien font…</p>
+        <p class="text-5xl font-medium tracking-tight text-foreground">
+          {{ gameStore.currentQuestion?.a }} × {{ gameStore.currentQuestion?.b }} = ?
         </p>
       </div>
 
-      <!-- Idle: input zone -->
+      <!-- Idle: free input -->
       <template v-if="status === 'idle'">
 
-        <!-- Free input mode -->
         <div v-if="!showHint" class="flex flex-col gap-3">
           <div class="relative">
-            <Input
-              v-model="userInput"
+            <input
+              v-model="inputValue"
               type="number"
               placeholder="Ta réponse…"
-              class="text-center text-xl pr-12 py-6"
+              :class="[
+                'w-full rounded-lg border border-border bg-background px-4 py-3 pr-12 text-center',
+                'text-xl outline-none transition-colors focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20',
+              ]"
               @keyup.enter="submit"
               autofocus
             />
             <button
               @click="openHint"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-amber-500 transition-colors p-1"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-amber-500"
               title="Voir des propositions"
             >
               💡
             </button>
           </div>
-          <Button
+          <button
             @click="submit"
-            :disabled="!userInput.trim()"
-            class="w-full bg-teal-600 hover:bg-teal-700 text-white py-6 text-base"
+            :disabled="!inputValue"
+            :class="[
+              'w-full rounded-xl py-3.5 text-base font-medium transition-colors',
+              inputValue
+                ? 'bg-teal-600 text-white hover:bg-teal-700'
+                : 'cursor-not-allowed bg-muted text-muted-foreground',
+            ]"
           >
             Valider
-          </Button>
+          </button>
         </div>
 
-        <!-- Hint mode -->
+        <!-- Hint panel -->
         <div v-else class="flex flex-col gap-3">
           <div class="flex items-center gap-2">
             <span class="text-amber-500">💡</span>
@@ -163,23 +165,30 @@ function goBack() {
               :key="option"
               @click="selectHint(option)"
               :class="[
-                'py-3 rounded-xl border text-lg font-medium transition-colors',
+                'rounded-xl border py-3 text-lg font-medium transition-colors',
                 selectedHint === option
                   ? 'border-teal-500 bg-teal-50 text-teal-900'
-                  : 'border-border bg-background hover:border-teal-400 text-foreground',
+                  : 'border-border bg-background text-foreground hover:border-teal-400',
               ]"
-            >{{ option }}</button>
+            >
+              {{ option }}
+            </button>
           </div>
-          <Button
+          <button
             @click="submit"
             :disabled="selectedHint === null"
-            class="w-full bg-teal-600 hover:bg-teal-700 text-white py-6 text-base"
+            :class="[
+              'w-full rounded-xl py-3.5 text-base font-medium transition-colors',
+              selectedHint !== null
+                ? 'bg-teal-600 text-white hover:bg-teal-700'
+                : 'cursor-not-allowed bg-muted text-muted-foreground',
+            ]"
           >
             Valider
-          </Button>
+          </button>
           <button
             @click="closeHint"
-            class="text-xs text-muted-foreground hover:text-foreground transition-colors text-center py-1"
+            class="py-1 text-center text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             Saisir moi-même
           </button>
@@ -188,42 +197,54 @@ function goBack() {
 
       <!-- Correct feedback -->
       <div v-else-if="status === 'correct'" class="flex flex-col gap-4">
-        <div class="bg-teal-50 border border-teal-300 rounded-xl p-5 text-center">
-          <p class="text-3xl mb-2">🎉</p>
-          <p class="text-base font-medium text-teal-900 mb-1">Bravo, c'est exact !</p>
+        <div class="py-4 text-center">
+          <p class="mb-3 text-sm text-muted-foreground">Combien font…</p>
+          <p class="text-5xl font-medium tracking-tight text-foreground">
+            {{ gameStore.answers.at(-1)?.question.a }} × {{ gameStore.answers.at(-1)?.question.b }} = ?
+          </p>
+        </div>
+        <div class="rounded-xl border border-teal-300 bg-teal-50 p-5 text-center">
+          <p class="mb-2 text-3xl">🎉</p>
+          <p class="mb-1 text-base font-medium text-teal-900">Bravo, c'est exact !</p>
           <p class="text-sm text-teal-700">
-            {{ question?.a }} × {{ question?.b }} = {{ question?.answer }}
+            {{ gameStore.answers.at(-1)?.question.a }} ×
+            {{ gameStore.answers.at(-1)?.question.b }} =
+            {{ gameStore.answers.at(-1)?.question.answer }}
           </p>
         </div>
         <div class="flex items-center justify-center gap-1.5">
-          <span class="text-amber-400 text-sm">★</span>
+          <span class="text-sm text-amber-400">★</span>
           <span class="text-sm text-muted-foreground">+10 xp</span>
         </div>
-        <Button
+        <button
           @click="next"
-          class="w-full bg-teal-600 hover:bg-teal-700 text-white py-6 text-base"
+          class="w-full rounded-xl bg-teal-600 py-3.5 text-base font-medium text-white transition-colors hover:bg-teal-700"
         >
-          {{ sessionStore.isSessionComplete ? 'Voir mes résultats' : 'Question suivante' }}
-        </Button>
+          {{ gameStore.isComplete ? 'Voir mes résultats' : 'Question suivante' }}
+        </button>
       </div>
 
       <!-- Wrong feedback -->
       <div v-else-if="status === 'wrong'" class="flex flex-col gap-4">
-        <div class="bg-muted border border-border rounded-xl p-5 text-center">
-          <p class="text-3xl mb-2">💪</p>
-          <p class="text-base font-medium text-foreground mb-1">Pas tout à fait…</p>
-          <p class="text-sm text-muted-foreground mb-3">La bonne réponse était</p>
-          <div class="inline-block bg-background border border-border rounded-lg px-6 py-2">
-            <span class="text-2xl font-medium text-foreground">{{ question?.answer }}</span>
+        <div class="rounded-xl border border-border bg-muted p-5 text-center">
+          <p class="mb-2 text-3xl">💪</p>
+          <p class="mb-1 text-base font-medium text-foreground">Pas tout à fait…</p>
+          <p class="mb-3 text-sm text-muted-foreground">La bonne réponse était</p>
+          <div class="inline-block rounded-lg border border-border bg-background px-6 py-2">
+            <span class="text-2xl font-medium text-foreground">
+              {{ gameStore.answers.at(-1)?.question.answer }}
+            </span>
           </div>
         </div>
-        <p class="text-xs text-muted-foreground text-center">On la reverra un peu plus tard, promis.</p>
-        <Button
+        <p class="text-center text-xs text-muted-foreground">
+          On la reverra un peu plus tard, promis.
+        </p>
+        <button
           @click="next"
-          class="w-full bg-teal-600 hover:bg-teal-700 text-white py-6 text-base"
+          class="w-full rounded-xl bg-teal-600 py-3.5 text-base font-medium text-white transition-colors hover:bg-teal-700"
         >
-          {{ sessionStore.isSessionComplete ? 'Voir mes résultats' : 'Question suivante' }}
-        </Button>
+          {{ gameStore.isComplete ? 'Voir mes résultats' : 'Question suivante' }}
+        </button>
       </div>
 
     </div>

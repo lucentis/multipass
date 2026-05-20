@@ -2,12 +2,14 @@
 import { computed } from 'vue'
 
 import { useAppStore } from '@/stores/app.store'
+import { useGameStore } from '@/stores/game.store'
 import { useProfilesStore } from '@/stores/profiles.store'
 import { useProgressStore } from '@/stores/progress.store'
 import BottomNav from '@/components/BottomNav.vue'
 import StarRating from '@/components/StarRating.vue'
 
 const appStore = useAppStore()
+const gameStore = useGameStore()
 const profilesStore = useProfilesStore()
 const progressStore = useProgressStore()
 
@@ -16,14 +18,13 @@ const tables = computed(() => progressStore.getAllTables(profile.value.id))
 
 const xpPercent = computed(() => Math.min((profile.value.xp / 500) * 100, 100))
 
-// Suggest the first unlocked in-progress table, or the first undiscovered table
 const suggestion = computed(() => {
   const inProgress = tables.value.find(
     t => t.unlocked && t.totalAttempts > 0 && t.stars < 3,
   )
   if (inProgress) {
     return {
-      action: 'practice' as const,
+      screen: 'practice' as const,
       table: inProgress.number,
       label: `Table de ×${inProgress.number} — Entraînement`,
     }
@@ -32,7 +33,7 @@ const suggestion = computed(() => {
   const undiscovered = tables.value.find(t => t.unlocked && !t.discovered)
   if (undiscovered) {
     return {
-      action: 'discover' as const,
+      screen: 'discover' as const,
       table: undiscovered.number,
       label: `Table de ×${undiscovered.number} — Découverte`,
     }
@@ -41,28 +42,31 @@ const suggestion = computed(() => {
   return null
 })
 
-// First unlocked table for the mode buttons
 const firstUnlocked = computed(() => tables.value.find(t => t.unlocked))
+
+function goTo(screen: 'practice' | 'discover', tableNumber: number): void {
+  gameStore.tableNumber = tableNumber
+  appStore.navigate(screen)
+}
 
 function handleSuggestion(): void {
   if (!suggestion.value) return
-  appStore.navigate(suggestion.value.action)
+  goTo(suggestion.value.screen, suggestion.value.table)
 }
 
-function handleTableClick(tableNumber: number, unlocked: boolean): void {
-  if (!unlocked) return
-  const table = tables.value.find(t => t.number === tableNumber)
-  const screen = table?.discovered ? 'practice' : 'discover'
-  appStore.navigate(screen)
+function handleTableClick(table: typeof tables.value[number]): void {
+  if (!table.unlocked) return
+  const screen = table.discovered ? 'practice' : 'discover'
+  goTo(screen, table.number)
 }
 
 function handleDiscover(): void {
   const target = tables.value.find(t => t.unlocked && !t.discovered) ?? firstUnlocked.value
-  if (target) appStore.navigate('discover')
+  if (target) goTo('discover', target.number)
 }
 
 function handlePractice(): void {
-  if (firstUnlocked.value) appStore.navigate('practice')
+  if (firstUnlocked.value) goTo('practice', firstUnlocked.value.number)
 }
 </script>
 
@@ -121,7 +125,7 @@ function handlePractice(): void {
           <button
             v-for="table in tables"
             :key="table.number"
-            @click="handleTableClick(table.number, table.unlocked)"
+            @click="handleTableClick(table)"
             :disabled="!table.unlocked"
             :class="[
               'flex flex-col items-center rounded-xl border py-3 transition-colors',
