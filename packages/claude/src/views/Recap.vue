@@ -1,14 +1,14 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
-import { useProgressStore } from '@/stores/progress.store'
 import { useProfilesStore } from '@/stores/profiles.store'
 import { useGameStore } from '@/stores/game.store'
+import { useAppStore } from '@/stores/app.store'
 import { Button } from '@/components/ui/button'
 import StarRating from '@/components/StarRating.vue'
 
 const gameStore = useGameStore()
-const progressStore = useProgressStore()
 const profilesStore = useProfilesStore()
+const appStore = useAppStore()
 
 const tableNumber = computed(() => gameStore.tableNumber)
 const summary = computed(() => gameStore.summary)
@@ -33,12 +33,12 @@ const feedback = computed(() => {
 const xpGained = computed(() => summary.value.correct * 10)
 
 function replay() {
-  gameStore.startPractice()
-  appStore.navigateTo('practice')
+  gameStore.startPractice(gameStore.tableNumber ?? 1)
+  appStore.navigate('practice')
 }
 
 function goHome() {
-  appStore.navigateTo('dashboard')
+  appStore.navigate('dashboard')
 }
 </script>
 

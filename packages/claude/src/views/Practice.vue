@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 
 import { useAppStore } from '@/stores/app.store'
 import { useGameStore } from '@/stores/game.store'

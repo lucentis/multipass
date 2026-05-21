@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 defineProps({
   stars: { type: Number, required: true }, // 0–3
   size: { type: String, default: 'sm' },   // sm | md | lg
