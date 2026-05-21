@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev:gpt",
+    "dev": "npm run dev:claude",
     "dev:gpt": "npm run dev --workspace=packages/gpt",
     "dev:claude": "npm run dev --workspace=packages/claude",
     "build": "vue-tsc -b && vite build",

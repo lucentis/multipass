@@ -7,16 +7,17 @@ import { useProfilesStore } from '@/stores/profiles.store'
 import { useProgressStore } from '@/stores/progress.store'
 import BottomNav from '@/components/BottomNav.vue'
 import StarRating from '@/components/StarRating.vue'
+import ProfileMenuButton from '@/components/ProfileMenuButton.vue'
 
 const appStore = useAppStore()
 const gameStore = useGameStore()
 const profilesStore = useProfilesStore()
 const progressStore = useProgressStore()
 
-const profile = computed(() => profilesStore.activeProfile!)
-const tables = computed(() => progressStore.getAllTables(profile.value.id))
+const profile = computed(() => profilesStore.activeProfile)
+const tables = computed(() => profile.value ? progressStore.getAllTables(profile.value.id) : [])
 
-const xpPercent = computed(() => Math.min((profile.value.xp / 500) * 100, 100))
+const xpPercent = computed(() => Math.min(((profile.value?.xp ?? 0) / 500) * 100, 100))
 
 const suggestion = computed(() => {
   const inProgress = tables.value.find(
@@ -71,16 +72,12 @@ function handlePractice(): void {
 </script>
 
 <template>
-  <div class="flex flex-col min-h-screen">
+  <div v-if="profile" class="flex flex-col min-h-screen">
 
     <!-- Profile header -->
     <div class="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background px-4 py-3">
-      <div class="flex items-center gap-3">
-        <span class="text-3xl leading-none">{{ profile.avatar }}</span>
-        <div>
-          <p class="text-sm font-medium leading-none text-foreground mb-1.5">
-            {{ profile.name }}
-          </p>
+      <ProfileMenuButton>
+        <template #xp-bar>
           <div class="flex items-center gap-2">
             <div class="h-1 w-20 overflow-hidden rounded-full bg-muted">
               <div
@@ -90,8 +87,8 @@ function handlePractice(): void {
             </div>
             <span class="text-xs text-muted-foreground">{{ profile.xp }} xp</span>
           </div>
-        </div>
-      </div>
+        </template>
+      </ProfileMenuButton>
       <button
         @click="appStore.navigate('profiles')"
         class="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"

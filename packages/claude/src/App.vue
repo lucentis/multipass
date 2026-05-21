@@ -19,8 +19,7 @@ import Progress from '@/views/Progress.vue'
 
 const appStore = useAppStore()
 
-const { currentScreen } =
-  storeToRefs(appStore)
+const { currentScreen } = storeToRefs(appStore)
 </script>
 
 <template>

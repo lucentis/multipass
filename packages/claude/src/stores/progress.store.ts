@@ -87,6 +87,17 @@ export const useProgressStore = defineStore('progress', () => {
     }
   }
 
+  // Wipe all progress for a profile and restart from scratch
+  function resetProfile(profileId: string): void {
+    delete data.value[profileId]
+    init(profileId)
+  }
+
+  // Remove all data for a deleted profile
+  function removeProfile(profileId: string): void {
+    delete data.value[profileId]
+  }
+
   function getStats(profileId: string) {
     const tables = getAllTables(profileId)
     return {
@@ -104,6 +115,8 @@ export const useProgressStore = defineStore('progress', () => {
     getAllTables,
     markDiscovered,
     recordSession,
+    resetProfile,
+    removeProfile,
     getStats,
   }
 }, {
