@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-} from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList } from '@/components/ui/tabs'
 
 import { useAppStore } from '@/stores/app.store'
 

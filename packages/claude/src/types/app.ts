@@ -5,3 +5,4 @@ export type Screen =
   | 'recap'
   | 'discover'
   | 'practice'
+  | 'progress'
