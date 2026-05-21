@@ -1,111 +1,102 @@
-<script setup>
-import { ref, computed } from 'vue'
-import { useSessionStore } from '@/stores/session.store'
-import { useProfilesStore } from '@/stores/profiles.store'
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+
+import { useAppStore } from '@/stores/app.store'
+import { useGameStore } from '@/stores/game.store'
 import { useProgressStore } from '@/stores/progress.store'
-import { generateDiscoverExamples, generateQuestions } from '@/utils/multiplication'
-import { Button } from '@/components/ui/button'
+import { useProfilesStore } from '@/stores/profiles.store'
 
-const sessionStore = useSessionStore()
-const profilesStore = useProfilesStore()
+const appStore = useAppStore()
+const gameStore = useGameStore()
 const progressStore = useProgressStore()
+const profilesStore = useProfilesStore()
 
-const tableNumber = computed(() => sessionStore.discoverTable)
+// Discover.vue owns session init — Dashboard only sets gameStore.tableNumber
+onMounted(() => {
+  if (gameStore.tableNumber !== null) {
+    gameStore.startDiscover(gameStore.tableNumber)
+  }
+})
 
-// Generate all 10 examples for this table upfront
-const examples = ref(generateDiscoverExamples(tableNumber.value))
-const currentIndex = ref(0)
 const revealed = ref(false)
-const done = ref(false)
 
-const current = computed(() => examples.value[currentIndex.value])
-const progress = computed(() => ((currentIndex.value) / examples.value.length) * 100)
+const example = computed(() => gameStore.currentExample)
+const index = computed(() => gameStore.discoverIndex)
+const total = computed(() => gameStore.examples.length)
+const progressPercent = computed(() => (index.value / total.value) * 100)
 
-// Build group arrays for the visual array: a groups of b items
+// Build visual groups: example.a groups of example.b emoji
 const groups = computed(() => {
-  const { a, b, emoji } = current.value
-  return Array.from({ length: a }, (_, i) => ({
+  if (!example.value) return []
+  return Array.from({ length: example.value.a }, (_, i) => ({
     label: `Groupe ${i + 1}`,
-    items: Array.from({ length: b }, () => emoji),
+    items: Array.from({ length: example.value!.b }, () => example.value!.emoji),
   }))
 })
 
-function reveal() {
+function reveal(): void {
   revealed.value = true
 }
 
-function next() {
-  if (currentIndex.value < examples.value.length - 1) {
-    currentIndex.value++
-    revealed.value = false
-  } else {
-    done.value = true
-    // Mark as discovered and unlock next table
-    progressStore.markDiscovered(profilesStore.activeProfileId, tableNumber.value)
+function next(): void {
+  if (gameStore.isDiscoverComplete) return
+
+  revealed.value = false
+  gameStore.nextDiscover()
+
+  if (gameStore.isDiscoverComplete) {
+    progressStore.markDiscovered(profilesStore.activeProfile!.id, gameStore.tableNumber!)
   }
 }
 
-function goToPractice() {
-  sessionStore.startSession(generateQuestions(tableNumber.value))
-  sessionStore.navigateTo('practice', { practiceTable: tableNumber.value })
+function goToPractice(): void {
+  gameStore.startPractice(gameStore.tableNumber!)
+  appStore.navigate('practice')
 }
 
-function goToDashboard() {
-  sessionStore.navigateTo('dashboard')
-}
-
-function goToNextDiscover() {
-  // Find the next table in the store
-  const allTables = progressStore.getAllTables(profilesStore.activeProfileId)
-  const nextTable = allTables.find(t => t.unlocked && !t.discovered)
-  if (nextTable) {
-    examples.value = generateDiscoverExamples(nextTable.number)
-    currentIndex.value = 0
+function goToNextDiscover(): void {
+  const allTables = progressStore.getAllTables(profilesStore.activeProfile!.id)
+  const next = allTables.find(t => t.unlocked && !t.discovered)
+  if (next) {
+    gameStore.startDiscover(next.number)
     revealed.value = false
-    done.value = false
-    sessionStore.navigateTo('discover', { discoverTable: nextTable.number })
   } else {
-    goToDashboard()
+    appStore.navigate('dashboard')
   }
-}
-
-function goBack() {
-  sessionStore.navigateTo('dashboard')
 }
 </script>
 
 <template>
-  <div class="flex flex-col min-h-screen">
+  <div class="flex min-h-screen flex-col">
 
     <!-- Done screen -->
-    <template v-if="done">
-      <div class="flex flex-col flex-1 items-center justify-center p-6 gap-6 text-center">
-        <p class="text-5xl">🌟</p>
+    <template v-if="gameStore.isDiscoverComplete">
+      <div class="flex flex-1 flex-col items-center justify-center gap-6 p-6 text-center">
+        <p class="text-5xl leading-none">🌟</p>
         <div>
-          <p class="text-xl font-medium text-foreground mb-1">
-            Table de ×{{ tableNumber }} découverte !
+          <p class="mb-1 text-xl font-medium text-foreground">
+            Table de ×{{ gameStore.tableNumber }} découverte !
           </p>
           <p class="text-sm text-muted-foreground">
             Tu connais maintenant tous les exemples. Prête à t'entraîner ?
           </p>
         </div>
-        <div class="flex flex-col gap-3 w-full max-w-xs">
-          <Button
+        <div class="flex w-full max-w-xs flex-col gap-3">
+          <button
             @click="goToPractice"
-            class="w-full bg-teal-600 hover:bg-teal-700 text-white py-6 text-base"
+            class="w-full rounded-xl bg-teal-600 py-3.5 text-base font-medium text-white transition-colors hover:bg-teal-700"
           >
-            S'entraîner sur ×{{ tableNumber }}
-          </Button>
-          <Button
-            variant="outline"
+            S'entraîner sur ×{{ gameStore.tableNumber }}
+          </button>
+          <button
             @click="goToNextDiscover"
-            class="w-full py-6 text-base"
+            class="w-full rounded-xl border border-border py-3.5 text-base font-medium text-foreground transition-colors hover:bg-muted"
           >
             Découvrir la table suivante →
-          </Button>
+          </button>
           <button
-            @click="goToDashboard"
-            class="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+            @click="appStore.navigate('dashboard')"
+            class="py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Retour à l'accueil
           </button>
@@ -114,48 +105,49 @@ function goBack() {
     </template>
 
     <!-- Main discover screen -->
-    <template v-else>
+    <template v-else-if="example">
+
       <!-- Header -->
-      <div class="flex items-center justify-between px-4 py-3 border-b border-border">
+      <div class="flex items-center justify-between border-b border-border px-4 py-3">
         <button
-          @click="goBack"
-          class="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          @click="appStore.navigate('dashboard')"
+          class="text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           ← Retour
         </button>
-        <p class="text-sm font-medium text-foreground">Découvrir ×{{ tableNumber }}</p>
-        <span class="text-xs text-muted-foreground">{{ currentIndex + 1 }} / {{ examples.length }}</span>
+        <p class="text-sm font-medium text-foreground">Découvrir ×{{ gameStore.tableNumber }}</p>
+        <span class="text-xs text-muted-foreground">{{ index + 1 }} / {{ total }}</span>
       </div>
 
-      <div class="flex-1 p-4 flex flex-col gap-5">
+      <div class="flex flex-1 flex-col gap-5 p-4">
 
         <!-- Progress bar -->
-        <div class="bg-muted rounded-full h-1">
+        <div class="h-1 w-full overflow-hidden rounded-full bg-muted">
           <div
-            class="bg-teal-500 h-1 rounded-full transition-all duration-300"
-            :style="{ width: progress + '%' }"
+            class="h-full rounded-full bg-teal-500 transition-all duration-300"
+            :style="{ width: progressPercent + '%' }"
           />
         </div>
 
         <!-- Concept label -->
-        <div class="text-center pt-2">
+        <div class="pt-1 text-center">
           <p class="text-base text-muted-foreground">
-            <span class="font-medium text-foreground">{{ current.a }}</span>
+            <span class="font-medium text-foreground">{{ example.a }}</span>
             groupes de
-            <span class="font-medium text-foreground">{{ current.b }}</span>
-            {{ current.emoji }}
+            <span class="font-medium text-foreground">{{ example.b }}</span>
+            {{ example.emoji }}
           </p>
         </div>
 
-        <!-- Visual array -->
-        <div class="flex flex-col gap-2.5">
+        <!-- Visual groups -->
+        <div class="flex flex-col gap-2">
           <div
             v-for="group in groups"
             :key="group.label"
-            class="flex items-center gap-3 bg-muted rounded-xl px-3 py-2.5"
+            class="flex items-center gap-3 rounded-xl bg-muted px-3 py-2.5"
           >
-            <span class="text-xs text-muted-foreground min-w-[58px]">{{ group.label }}</span>
-            <div class="flex gap-1.5 flex-wrap">
+            <span class="min-w-[58px] text-xs text-muted-foreground">{{ group.label }}</span>
+            <div class="flex flex-wrap gap-1.5">
               <span
                 v-for="(emoji, idx) in group.items"
                 :key="idx"
@@ -166,56 +158,49 @@ function goBack() {
         </div>
 
         <!-- Equation -->
-        <div class="text-center py-3">
-          <p class="text-5xl font-medium text-foreground tracking-tight">
-            {{ current.a }} × {{ current.b }} =
-            <span
-              :class="[
-                'transition-colors duration-300',
-                revealed ? 'text-teal-600' : 'text-muted-foreground',
-              ]"
-            >{{ revealed ? current.answer : '?' }}</span>
+        <div class="py-2 text-center">
+          <p class="text-5xl font-medium tracking-tight text-foreground">
+            {{ example.a }} × {{ example.b }} =
+            <span :class="revealed ? 'text-teal-600' : 'text-muted-foreground'">
+              {{ revealed ? example.answer : '?' }}
+            </span>
           </p>
         </div>
 
-        <!-- Hint before reveal -->
-        <p
-          v-if="!revealed"
-          class="text-center text-sm text-muted-foreground"
-        >
-          Compte toutes les {{ current.emoji }} …
+        <!-- Hint / celebration -->
+        <p v-if="!revealed" class="text-center text-sm text-muted-foreground">
+          Compte tous les {{ example.emoji }}…
         </p>
-
-        <!-- Celebration after reveal -->
         <div
-          v-if="revealed"
-          class="bg-teal-50 border border-teal-300 rounded-xl px-4 py-3 text-center"
+          v-else
+          class="rounded-xl border border-teal-300 bg-teal-50 px-4 py-3 text-center"
         >
           <p class="text-sm text-teal-800">
-            {{ current.a }} groupes de {{ current.b }} font bien
-            <strong class="font-semibold">{{ current.answer }}</strong> en tout !
+            {{ example.a }} groupes de {{ example.b }} font bien
+            <strong class="font-semibold">{{ example.answer }}</strong> en tout !
           </p>
         </div>
 
         <!-- Actions -->
-        <div class="flex flex-col gap-2.5 mt-auto">
-          <Button
+        <div class="mt-auto">
+          <button
             v-if="!revealed"
             @click="reveal"
-            class="w-full bg-teal-600 hover:bg-teal-700 text-white py-6 text-base"
+            class="w-full rounded-xl bg-teal-600 py-3.5 text-base font-medium text-white transition-colors hover:bg-teal-700"
           >
             Révéler la réponse
-          </Button>
-          <Button
+          </button>
+          <button
             v-else
             @click="next"
-            class="w-full bg-teal-600 hover:bg-teal-700 text-white py-6 text-base"
+            class="w-full rounded-xl bg-teal-600 py-3.5 text-base font-medium text-white transition-colors hover:bg-teal-700"
           >
-            {{ currentIndex < examples.length - 1 ? 'Exemple suivant →' : 'Terminer la découverte 🎉' }}
-          </Button>
+            {{ index < total - 1 ? 'Exemple suivant →' : 'Terminer la découverte 🎉' }}
+          </button>
         </div>
 
       </div>
     </template>
+
   </div>
 </template>

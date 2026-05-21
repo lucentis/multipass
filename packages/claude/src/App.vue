@@ -14,6 +14,7 @@ import CreateProfile from '@/views/CreateProfile.vue'
 import ProfileSelection from '@/views/ProfileSelection.vue'
 import Practice from '@/views/Practice.vue'
 import Recap from '@/views/Recap.vue'
+import Discover from '@/views/Discover.vue'
 
 const appStore = useAppStore()
 
@@ -62,6 +63,14 @@ const { currentScreen } =
       >
         <Recap />
       </TabsContent>
+
+      <TabsContent
+        value="discover"
+        class="m-0"
+      >
+        <Discover />
+      </TabsContent>
+
     </Tabs>
   </main>
 </template>
