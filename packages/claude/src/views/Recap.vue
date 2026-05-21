@@ -43,7 +43,7 @@ function goHome() {
 </script>
 
 <template>
-  <div class="flex flex-col min-h-screen p-6 gap-6">
+  <div class="flex flex-col min-h-dvh p-6 gap-6">
 
     <!-- Title & emoji -->
     <div class="text-center pt-4">

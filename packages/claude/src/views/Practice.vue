@@ -72,7 +72,7 @@ function next(): void {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col">
+  <div class="flex min-h-dvh flex-col">
 
     <!-- Header -->
     <div class="flex items-center justify-between border-b border-border px-4 py-3">

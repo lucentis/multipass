@@ -67,7 +67,7 @@ function goToNextDiscover(): void {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col">
+  <div class="flex min-h-dvh flex-col">
 
     <!-- Done screen -->
     <template v-if="gameStore.isDiscoverComplete">

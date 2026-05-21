@@ -72,7 +72,7 @@ function handlePractice(): void {
 </script>
 
 <template>
-  <div v-if="profile" class="flex flex-col min-h-screen">
+  <div v-if="profile" class="flex flex-col min-h-dvh">
 
     <!-- Profile header -->
     <div class="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background px-4 py-3">

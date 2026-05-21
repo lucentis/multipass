@@ -17,7 +17,7 @@ const xpPercent = computed(() => Math.min((profile.value.xp / 500) * 100, 100))
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col">
+  <div class="flex min-h-dvh flex-col">
 
     <!-- Header -->
     <div class="sticky top-0 z-10 flex items-center gap-3 border-b border-border bg-background px-4 py-3">
