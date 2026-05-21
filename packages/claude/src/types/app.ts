@@ -3,3 +3,5 @@ export type Screen =
   | 'create-profile'
   | 'dashboard'
   | 'recap'
+  | 'discover'
+  | 'practice'

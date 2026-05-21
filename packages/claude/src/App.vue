@@ -15,6 +15,7 @@ import ProfileSelection from '@/views/ProfileSelection.vue'
 import Practice from '@/views/Practice.vue'
 import Recap from '@/views/Recap.vue'
 import Discover from '@/views/Discover.vue'
+import Progress from '@/views/Progress.vue'
 
 const appStore = useAppStore()
 
@@ -69,6 +70,13 @@ const { currentScreen } =
         class="m-0"
       >
         <Discover />
+      </TabsContent>
+
+      <TabsContent
+        value="progress"
+        class="m-0"
+      >
+        <Progress />
       </TabsContent>
 
     </Tabs>

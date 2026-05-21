@@ -1,6 +1,5 @@
 <script setup>
 import { computed } from 'vue'
-import { useAppStore } from '@/stores/app.store'
 import { useProgressStore } from '@/stores/progress.store'
 import { useProfilesStore } from '@/stores/profiles.store'
 import { useGameStore } from '@/stores/game.store'
