@@ -17,9 +17,9 @@ const successRate = computed(() => summary.value.correct / summary.value.total)
 
 const stars = computed(() => {
   const r = successRate.value
-  if (r >= 0.9) return 3
-  if (r >= 0.7) return 2
-  if (r >= 0.5) return 1
+  if (r >= 0.8) return 3
+  if (r >= 0.6) return 2
+  if (r >= 0.3) return 1
   return 0
 })
 
