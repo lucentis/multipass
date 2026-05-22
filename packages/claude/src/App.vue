@@ -19,7 +19,7 @@ const { currentScreen } = storeToRefs(appStore)
 </script>
 
 <template>
-  <main class="min-h-screen bg-slate-50">
+  <main class="min-h-screen">
     <Tabs
       v-model="currentScreen"
     >
