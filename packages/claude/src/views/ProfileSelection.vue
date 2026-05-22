@@ -60,65 +60,65 @@ function xpToPercent(xp: number): number {
 
       <!-- Profiles -->
       <div class="flex-1 overflow-y-auto p-4">
-      <div class="grid grid-cols-2 gap-4 px-1">
+        <div class="grid grid-cols-2 gap-4 px-1">
 
-        <button
-          v-for="profile in profilesStore.profiles"
-          :key="profile.id"
-          @click="selectProfile(profile.id)"
-          class="rounded-lg bg-white px-2 py-4 text-center shadow-[0_3px_10px_rgba(0,0,0,0.07)]"
-        >
-          <!-- Avatar -->
-          <div
-            class="mx-auto flex size-24 items-center justify-center rounded-full bg-teal-50"
+          <button
+            v-for="profile in profilesStore.profiles"
+            :key="profile.id"
+            @click="selectProfile(profile.id)"
+            class="rounded-lg bg-white px-2 py-4 text-center shadow-[0_3px_10px_rgba(0,0,0,0.07)] border"
           >
-            <span class="text-6xl leading-none">
-              {{ profile.avatar }}
-            </span>
-          </div>
-
-          <!-- Name -->
-          <p class="mb-1 text-lg font-extrabold text-teal-800">
-            {{ profile.name }}
-          </p>
-
-          <!-- XP Bar -->
-          <div class="mx-[2px] mb-2 mt-[5px] h-2 rounded-full bg-slate-100">
+            <!-- Avatar -->
             <div
-              class="h-2 rounded-full bg-teal-500 transition-all"
-              :style="{ width: xpToPercent(profile.xp) + '%' }"
-            />
-          </div>
+              class="mx-auto flex size-24 items-center justify-center rounded-full bg-teal-50"
+            >
+              <span class="text-6xl leading-none">
+                {{ profile.avatar }}
+              </span>
+            </div>
 
-          <!-- Footer -->
-          <div class="flex justify-between px-[2px]">
-            <span class="text-xs font-bold text-slate-500">
-              {{ profile.xp }} XP
-            </span>
+            <!-- Name -->
+            <p class="mb-1 text-lg font-extrabold text-teal-800">
+              {{ profile.name }}
+            </p>
 
-            <span class="text-xs font-bold text-amber-500">
-              ★{{ progression.getStats(profile.id).totalStars }}
-            </span>
-          </div>
-        </button>
+            <!-- XP Bar -->
+            <div class="mx-[2px] mb-2 mt-[5px] h-2 rounded-full bg-slate-100">
+              <div
+                class="h-2 rounded-full bg-teal-500 transition-all"
+                :style="{ width: xpToPercent(profile.xp) + '%' }"
+              />
+            </div>
 
-        <!-- Create profile -->
-        <button
-          @click="appStore.navigate('create-profile')"
-          class="flex min-h-[190px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-200 bg-white shadow-[0_3px_10px_rgba(0,0,0,0.04)] transition-transform active:scale-[0.98]"
-        >
-          <div
-            class="mb-1 flex size-14 items-center justify-center rounded-full bg-teal-700 text-3xl text-white"
+            <!-- Footer -->
+            <div class="flex justify-between px-[2px]">
+              <span class="text-xs font-bold text-slate-500">
+                {{ profile.xp }} XP
+              </span>
+
+              <span class="text-xs font-bold text-amber-500">
+                ★{{ progression.getStats(profile.id).totalStars }}
+              </span>
+            </div>
+          </button>
+
+          <!-- Create profile -->
+          <button
+            @click="appStore.navigate('create-profile')"
+            class="flex min-h-[190px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-200 bg-white shadow-[0_3px_10px_rgba(0,0,0,0.04)] transition-transform active:scale-[0.98]"
           >
-            +
-          </div>
+            <div
+              class="mb-1 flex size-14 items-center justify-center rounded-full bg-teal-700 text-3xl text-white"
+            >
+              +
+            </div>
 
-          <p class="text-[11px] font-bold text-slate-500">
-            Nouveau
-          </p>
-        </button>
+            <p class="text-[11px] font-bold text-slate-500">
+              Nouveau
+            </p>
+          </button>
+        </div>
       </div>
-    </div>
     </div>
   </div>
 </template>
