@@ -100,6 +100,8 @@ export const useProgressStore = defineStore('progress', () => {
 
   function getStats(profileId: string) {
     const tables = getAllTables(profileId)
+    console.log(tables);
+    
     return {
       totalStars: tables.reduce((sum, t) => sum + t.stars, 0),
       tablesComplete: tables.filter(t => t.stars === 3).length,

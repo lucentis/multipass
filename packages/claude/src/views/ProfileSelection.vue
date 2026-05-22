@@ -2,7 +2,8 @@
 import { useProfilesStore } from '@/stores/profiles.store'
 import { useAppStore } from '@/stores/app.store'
 import { useProgressStore } from '@/stores/progress.store'
- 
+import masquotte from '@/assets/avatars/panda.png'
+
 const profilesStore = useProfilesStore()
 const appStore = useAppStore()
 const progression = useProgressStore()
@@ -12,51 +13,121 @@ function selectProfile(id: string): void {
   progression.init(id)
   appStore.navigate('dashboard')
 }
- 
+
 function xpToPercent(xp: number): number {
   return Math.min((xp / 500) * 100, 100)
 }
 </script>
- 
+
 <template>
-  <div class="flex flex-col flex-1 p-6">
- 
-    <div class="text-center py-8">
-      <p class="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">
-        multibul
-      </p>
-      <h1 class="text-xl font-medium text-foreground mb-1">Qui joue aujourd'hui ?</h1>
-      <p class="text-sm text-muted-foreground">Choisis ton profil</p>
-    </div>
- 
-    <div class="grid grid-cols-3 gap-3">
-      <button
-        v-for="profile in profilesStore.profiles"
-        :key="profile.id"
-        @click="selectProfile(profile.id)"
-        class="flex flex-col items-center p-4 bg-background border border-border rounded-xl hover:border-teal-400 transition-colors text-left"
-      >
-        <span class="text-4xl leading-none mb-3">{{ profile.avatar }}</span>
-        <p class="font-medium text-sm text-foreground mb-2.5 truncate w-full text-center">
-          {{ profile.name }}
-        </p>
-        <div class="w-full bg-muted rounded-full h-1 mb-1">
-          <div
-            class="bg-teal-500 h-1 rounded-full transition-all"
-            :style="{ width: xpToPercent(profile.xp) + '%' }"
-          />
+  <div class="relative h-dvh overflow-hidden bg-white font-[Nunito]">
+
+    <!-- background blobs -->
+    <div
+      class="absolute -top-12 -right-10 size-50 rounded-full bg-teal-100/80"
+    />
+
+    <div
+      class="absolute top-[-20px] right-24 size-24 rounded-full bg-teal-200/50"
+    />
+
+    <div
+      class="absolute -bottom-10 -left-10 size-50 rounded-full bg-teal-200/70"
+    />
+
+    <div
+      class="absolute bottom-8 left-30 size-20 rounded-full bg-teal-300/40"
+    />
+
+    <div
+      class="absolute top-1/2 -right-20 size-50 rounded-full bg-teal-200/70"
+    />
+
+    <div class="relative z-10 flex h-full flex-col px-4 pb-6">
+
+      <!-- Header -->
+      <div class="pb-5 pt-4 text-center">
+        <!-- mascot -->
+        <div
+          class="mx-auto mb-4 flex size-30 items-center justify-center rounded-full bg-teal-50"
+        >
+          <!-- remplace par ton asset renard -->
+          <img
+            :src="masquotte"
+            alt="Fox mascot"
+            class="h-full w-full object-contain"
+          >
         </div>
-        <span class="text-xs text-muted-foreground">{{ profile.xp }} xp</span>
-      </button>
- 
-      <button
-        @click="appStore.navigate('create-profile')"
-        class="flex flex-col items-center justify-center gap-2 p-4 bg-muted border border-dashed border-border rounded-xl hover:border-teal-400 transition-colors min-h-[130px]"
-      >
-        <span class="text-2xl text-muted-foreground">＋</span>
-        <span class="text-xs text-muted-foreground">Nouveau</span>
-      </button>
+
+
+        <h1 class=" text-2xl font-extrabold text-teal-800 leading-none tracking-tight">
+          Bonjour !
+        </h1>
+
+        <p class="text-xs font-bold text-teal-600">
+          Choisis ton profil
+        </p>
+      </div>
+
+      <!-- Profiles -->
+      <div class="grid grid-cols-2 gap-4 px-1">
+
+        <button
+          v-for="profile in profilesStore.profiles"
+          :key="profile.id"
+          @click="selectProfile(profile.id)"
+          class="rounded-lg bg-white px-2 py-3 text-center shadow-[0_3px_10px_rgba(0,0,0,0.07)]"
+        >
+          <!-- Avatar -->
+          <div
+            class="mx-auto flex size-24 items-center justify-center rounded-full bg-teal-50"
+          >
+            <span class="text-6xl leading-none">
+              {{ profile.avatar }}
+            </span>
+          </div>
+
+          <!-- Name -->
+          <p class="mb-1 text-lg font-extrabold text-teal-800">
+            {{ profile.name }}
+          </p>
+
+          <!-- XP Bar -->
+          <div class="mx-[2px] mb-2 mt-[5px] h-2 rounded-full bg-slate-100">
+            <div
+              class="h-2 rounded-full bg-teal-500 transition-all"
+              :style="{ width: xpToPercent(profile.xp) + '%' }"
+            />
+          </div>
+
+          <!-- Footer -->
+          <div class="flex justify-between px-[2px]">
+            <span class="text-xs font-bold text-slate-500">
+              {{ profile.xp }} XP
+            </span>
+
+            <span class="text-xs font-bold text-amber-500">
+              ★{{ progression.getStats(profile.id).totalStars }}
+            </span>
+          </div>
+        </button>
+
+        <!-- Create profile -->
+        <button
+          @click="appStore.navigate('create-profile')"
+          class="flex min-h-[110px] flex-col items-center justify-center rounded-[14px] border-2 border-dashed border-slate-200 bg-white shadow-[0_3px_10px_rgba(0,0,0,0.04)] transition-transform active:scale-[0.98]"
+        >
+          <div
+            class="mb-1 flex h-[34px] w-[34px] items-center justify-center rounded-full bg-teal-700 text-[20px] text-white"
+          >
+            +
+          </div>
+
+          <p class="text-[11px] font-bold text-slate-500">
+            Nouveau
+          </p>
+        </button>
+      </div>
     </div>
- 
   </div>
 </template>
