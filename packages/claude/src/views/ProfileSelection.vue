@@ -20,33 +20,21 @@ function xpToPercent(xp: number): number {
 </script>
 
 <template>
-  <div class="relative h-dvh overflow-hidden bg-white font-[Nunito]">
+  <div class="relative h-dvh bg-white font-[Nunito]">
 
     <!-- background blobs -->
-    <div
-      class="absolute -top-12 -right-10 size-50 rounded-full bg-teal-100/80"
-    />
+    <div class="pointer-events-none fixed inset-0 overflow-hidden">
+      <div class="absolute -top-12 -right-10 size-50 rounded-full bg-teal-100/80 blur-xs" />
+      <div class="absolute top-[-20px] right-24 size-24 rounded-full bg-teal-200/50 blur-xs" />
+      <div class="absolute -bottom-10 -left-10 size-50 rounded-full bg-teal-200/70 blur-xs" />
+      <div class="absolute bottom-8 left-30 size-20 rounded-full bg-teal-300/40 blur-xs" />
+      <div class="absolute top-1/2 -right-20 size-50 rounded-full bg-teal-200/40 blur-xs" />
+    </div>
 
-    <div
-      class="absolute top-[-20px] right-24 size-24 rounded-full bg-teal-200/50"
-    />
-
-    <div
-      class="absolute -bottom-10 -left-10 size-50 rounded-full bg-teal-200/70"
-    />
-
-    <div
-      class="absolute bottom-8 left-30 size-20 rounded-full bg-teal-300/40"
-    />
-
-    <div
-      class="absolute top-1/2 -right-20 size-50 rounded-full bg-teal-200/70"
-    />
-
-    <div class="relative z-10 flex h-full flex-col px-4 pb-6">
+    <div class="relative z-10 flex h-full flex-col">
 
       <!-- Header -->
-      <div class="pb-5 pt-4 text-center">
+      <div class="p-4 text-center sticky top-0 z-20 text-center">
         <!-- mascot -->
         <div
           class="mx-auto mb-4 flex size-30 items-center justify-center rounded-full bg-teal-50"
@@ -60,23 +48,25 @@ function xpToPercent(xp: number): number {
         </div>
 
 
-        <h1 class=" text-2xl font-extrabold text-teal-800 leading-none tracking-tight">
+        <h1 class=" text-3xl font-extrabold text-teal-700 leading-none tracking-tight">
           Bonjour !
         </h1>
 
-        <p class="text-xs font-bold text-teal-600">
+        <p class="text-xs font-bold text-slate-500">
           Choisis ton profil
         </p>
       </div>
 
+
       <!-- Profiles -->
+      <div class="flex-1 overflow-y-auto p-4">
       <div class="grid grid-cols-2 gap-4 px-1">
 
         <button
           v-for="profile in profilesStore.profiles"
           :key="profile.id"
           @click="selectProfile(profile.id)"
-          class="rounded-lg bg-white px-2 py-3 text-center shadow-[0_3px_10px_rgba(0,0,0,0.07)]"
+          class="rounded-lg bg-white px-2 py-4 text-center shadow-[0_3px_10px_rgba(0,0,0,0.07)]"
         >
           <!-- Avatar -->
           <div
@@ -115,10 +105,10 @@ function xpToPercent(xp: number): number {
         <!-- Create profile -->
         <button
           @click="appStore.navigate('create-profile')"
-          class="flex min-h-[110px] flex-col items-center justify-center rounded-[14px] border-2 border-dashed border-slate-200 bg-white shadow-[0_3px_10px_rgba(0,0,0,0.04)] transition-transform active:scale-[0.98]"
+          class="flex min-h-[190px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-200 bg-white shadow-[0_3px_10px_rgba(0,0,0,0.04)] transition-transform active:scale-[0.98]"
         >
           <div
-            class="mb-1 flex h-[34px] w-[34px] items-center justify-center rounded-full bg-teal-700 text-[20px] text-white"
+            class="mb-1 flex size-14 items-center justify-center rounded-full bg-teal-700 text-3xl text-white"
           >
             +
           </div>
@@ -128,6 +118,7 @@ function xpToPercent(xp: number): number {
           </p>
         </button>
       </div>
+    </div>
     </div>
   </div>
 </template>
