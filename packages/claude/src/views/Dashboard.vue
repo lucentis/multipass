@@ -5,6 +5,7 @@ import { useAppStore } from '@/stores/app.store'
 import { useGameStore } from '@/stores/game.store'
 import { useProfilesStore } from '@/stores/profiles.store'
 import { useProgressStore } from '@/stores/progress.store'
+
 import BottomNav from '@/components/BottomNav.vue'
 import StarRating from '@/components/StarRating.vue'
 import ProfileMenuButton from '@/components/ProfileMenuButton.vue'
@@ -15,37 +16,51 @@ const profilesStore = useProfilesStore()
 const progressStore = useProgressStore()
 
 const profile = computed(() => profilesStore.activeProfile)
-const tables = computed(() => profile.value ? progressStore.getAllTables(profile.value.id) : [])
 
-const xpPercent = computed(() => Math.min(((profile.value?.xp ?? 0) / 500) * 100, 100))
+const tables = computed(() =>
+  profile.value
+    ? progressStore.getAllTables(profile.value.id)
+    : [],
+)
 
 const suggestion = computed(() => {
   const inProgress = tables.value.find(
     t => t.unlocked && t.totalAttempts > 0 && t.stars < 3,
   )
+
   if (inProgress) {
     return {
       screen: 'practice' as const,
       table: inProgress.number,
-      label: `Table de ×${inProgress.number} — Entraînement`,
+      label: `Table ×${inProgress.number}`,
+      subtitle: 'Continue ton entraînement',
     }
   }
 
-  const undiscovered = tables.value.find(t => t.unlocked && !t.discovered)
+  const undiscovered = tables.value.find(
+    t => t.unlocked && !t.discovered,
+  )
+
   if (undiscovered) {
     return {
       screen: 'discover' as const,
       table: undiscovered.number,
-      label: `Table de ×${undiscovered.number} — Découverte`,
+      label: `Table ×${undiscovered.number}`,
+      subtitle: 'Découvre une nouvelle table',
     }
   }
 
   return null
 })
 
-const firstUnlocked = computed(() => tables.value.find(t => t.unlocked))
+const firstUnlocked = computed(() =>
+  tables.value.find(t => t.unlocked),
+)
 
-function goTo(screen: 'practice' | 'discover', tableNumber: number): void {
+function goTo(
+  screen: 'practice' | 'discover',
+  tableNumber: number,
+): void {
   gameStore.tableNumber = tableNumber
   appStore.navigate(screen)
 }
@@ -55,117 +70,207 @@ function handleSuggestion(): void {
   goTo(suggestion.value.screen, suggestion.value.table)
 }
 
-function handleTableClick(table: typeof tables.value[number]): void {
+function handleTableClick(
+  table: typeof tables.value[number],
+): void {
   if (!table.unlocked) return
-  const screen = table.discovered ? 'practice' : 'discover'
+
+  const screen = table.discovered
+    ? 'practice'
+    : 'discover'
+
   goTo(screen, table.number)
 }
 
 function handleDiscover(): void {
-  const target = tables.value.find(t => t.unlocked && !t.discovered) ?? firstUnlocked.value
-  if (target) goTo('discover', target.number)
+  const target =
+    tables.value.find(
+      t => t.unlocked && !t.discovered,
+    ) ?? firstUnlocked.value
+
+  if (target) {
+    goTo('discover', target.number)
+  }
 }
 
 function handlePractice(): void {
-  if (firstUnlocked.value) goTo('practice', firstUnlocked.value.number)
+  if (firstUnlocked.value) {
+    goTo('practice', firstUnlocked.value.number)
+  }
 }
 </script>
 
 <template>
-  <div v-if="profile" class="flex flex-col min-h-dvh">
+  <div
+    v-if="profile"
+    class="relative h-dvh overflow-hidden bg-amber-50/30 font-[Nunito]"
+  >
+    <!-- blobs -->
+    <div class="pointer-events-none fixed inset-0 overflow-hidden">
+      <div class="absolute -top-12 -right-10 size-50 rounded-full bg-amber-100/80 blur-[2px]" />
+      <div class="absolute top-[-20px] right-24 size-24 rounded-full bg-amber-200/50 blur-[2px]" />
+      <div class="absolute -bottom-10 -left-10 size-50 rounded-full bg-amber-200/70 blur-[2px]" />
+      <div class="absolute bottom-8 left-30 size-20 rounded-full bg-amber-300/40 blur-[2px]" />
+      <div class="absolute top-1/2 -right-20 size-50 rounded-full bg-amber-200/40 blur-[2px]" />
+    </div>
 
-    <!-- Profile header -->
-    <div class="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background px-4 py-3">
-      <ProfileMenuButton>
-        <template #xp-bar>
-          <div class="flex items-center gap-2">
-            <div class="h-1 w-20 overflow-hidden rounded-full bg-muted">
-              <div
-                class="h-full rounded-full bg-teal-500 transition-all duration-500"
-                :style="{ width: xpPercent + '%' }"
-              />
-            </div>
-            <span class="text-xs text-muted-foreground">{{ profile.xp }} xp</span>
+    <div class="relative z-10 flex h-full flex-col px-4 pb-24">
+      <!-- Header -->
+      <div class="pt-4">
+        <div class="flex items-start justify-between">
+
+          <!-- Left -->
+          <ProfileMenuButton />
+
+          <!-- Right stats -->
+          <div class="pt-1 text-right">
+            <p class="text-lg font-extrabold text-amber-500 leading-none">
+              ★ {{ progressStore.getStats(profile.id).totalStars }}
+            </p>
+
+            <p class="text-xs font-bold text-slate-500 flex gap-2 items-center">
+              {{ profile.xp }} XP
+            </p>
           </div>
-        </template>
-      </ProfileMenuButton>
-      <button
-        @click="appStore.navigate('profiles')"
-        class="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        title="Changer de profil"
-      >
-        👥
-      </button>
-    </div>
 
-    <div class="flex-1 overflow-y-auto p-4 pb-24 flex flex-col gap-5">
+        </div>
+      </div>
 
-      <!-- Smart suggestion -->
-      <button
-        v-if="suggestion"
-        @click="handleSuggestion"
-        class="flex w-full items-center justify-between rounded-xl border border-teal-300 bg-teal-50 px-4 py-3 text-left transition-colors hover:bg-teal-100"
-      >
-        <div>
-          <p class="mb-0.5 text-[10px] font-semibold uppercase tracking-widest text-teal-700">
-            Continuer
+      <!-- Content -->
+      <div class="flex flex-1 flex-col pt-4">
+
+        <!-- Continue -->
+        <button
+          v-if="suggestion"
+          @click="handleSuggestion"
+          class="mb-4 flex items-center justify-between rounded-3xl border border-amber-200 bg-amber-100/80 px-4 py-3 text-left shadow-sm transition active:scale-[0.98]"
+        >
+          <div>
+            <p
+              class="text-[10px] font-extrabold uppercase tracking-widest text-amber-700"
+            >
+              Continuer
+            </p>
+
+            <p
+              class="text-sm font-bold text-amber-900"
+            >
+              {{ suggestion.label }}
+            </p>
+
+            <p
+              class="text-[11px] text-amber-700"
+            >
+              {{ suggestion.subtitle }}
+            </p>
+          </div>
+
+          <span class="text-xl text-amber-700">
+            →
+          </span>
+        </button>
+
+        <!-- Tables -->
+        <div class="mb-4">
+          <p
+            class="mb-2 text-xs font-bold text-slate-500"
+          >
+            Mes tables
           </p>
-          <p class="text-sm font-medium text-teal-900">{{ suggestion.label }}</p>
-        </div>
-        <span class="text-teal-600">→</span>
-      </button>
 
-      <!-- Tables grid -->
-      <div>
-        <p class="mb-2.5 text-xs font-medium text-muted-foreground">Mes tables</p>
-        <div class="grid grid-cols-5 gap-2">
-          <button
-            v-for="table in tables"
-            :key="table.number"
-            @click="handleTableClick(table)"
-            :disabled="!table.unlocked"
-            :class="[
-              'flex flex-col items-center rounded-xl border py-3 transition-colors',
-              table.unlocked
-                ? table.stars === 3
-                  ? 'border-teal-300 bg-background hover:border-teal-500 cursor-pointer'
-                  : 'border-border bg-background hover:border-teal-400 cursor-pointer'
-                : 'cursor-not-allowed border-border bg-muted opacity-50',
-            ]"
+          <div class="grid grid-cols-5 gap-2">
+            <button
+              v-for="table in tables"
+              :key="table.number"
+              @click="handleTableClick(table)"
+              :disabled="!table.unlocked"
+              :class="[
+                'flex aspect-square flex-col items-center justify-center rounded-2xl border transition-all duration-150 active:scale-95',
+
+                !table.unlocked
+                  ? 'border-transparent bg-slate-100 opacity-50'
+                  : table.stars === 3
+                    ? 'border-amber-500'
+                    : 'border-white bg-white shadow-sm',
+              ]"
+            >
+              <p
+                class="mb-1 text-base font-extrabold text-slate-800"
+              >
+                ×{{ table.number }}
+              </p>
+
+              <span
+                v-if="!table.unlocked"
+                class="text-[10px]"
+              >
+                🔒
+              </span>
+
+              <StarRating
+                v-else
+                :stars="table.stars"
+                size="sm"
+              />
+            </button>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-auto">
+          <p
+            class="mb-2 text-xs font-bold text-slate-500"
           >
-            <p class="mb-1.5 text-sm font-medium text-foreground">×{{ table.number }}</p>
-            <span v-if="!table.unlocked" class="text-[10px] text-muted-foreground">🔒</span>
-            <StarRating v-else :stars="table.stars" size="sm" />
-          </button>
+            Que veux-tu faire ?
+          </p>
+
+          <div class="grid grid-cols-2 gap-3">
+            <button
+              @click="handleDiscover"
+              class="rounded-3xl bg-amber-100 p-4 text-left shadow-sm transition active:scale-[0.98]"
+            >
+              <div class="mb-2 text-2xl">
+                👁️
+              </div>
+
+              <p
+                class="text-sm font-extrabold text-amber-900"
+              >
+                Découvrir
+              </p>
+
+              <p
+                class="text-[11px] text-amber-700"
+              >
+                Avec images
+              </p>
+            </button>
+
+            <button
+              @click="handlePractice"
+              class="rounded-3xl border border-white bg-white p-4 text-left shadow-sm transition active:scale-[0.98]"
+            >
+              <div class="mb-2 text-2xl">
+                ✏️
+              </div>
+
+              <p
+                class="text-sm font-extrabold text-slate-800"
+              >
+                S'entraîner
+              </p>
+
+              <p
+                class="text-[11px] text-slate-500"
+              >
+                Exercices
+              </p>
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Mode buttons -->
-      <div>
-        <p class="mb-2.5 text-xs font-medium text-muted-foreground">Que veux-tu faire ?</p>
-        <div class="flex gap-3">
-          <button
-            @click="handleDiscover"
-            class="flex flex-1 flex-col p-4 rounded-xl border border-teal-300 bg-teal-50 text-left transition-colors hover:bg-teal-100"
-          >
-            <span class="mb-2 text-xl">👁️</span>
-            <p class="mb-0.5 text-sm font-medium text-teal-900">Découvrir</p>
-            <p class="text-[11px] text-teal-700">Comprendre avec des images</p>
-          </button>
-
-          <button
-            @click="handlePractice"
-            class="flex flex-1 flex-col p-4 rounded-xl border border-border bg-background text-left transition-colors hover:border-teal-400"
-          >
-            <span class="mb-2 text-xl">✏️</span>
-            <p class="mb-0.5 text-sm font-medium text-foreground">S'entraîner</p>
-            <p class="text-[11px] text-muted-foreground">Répondre aux questions</p>
-          </button>
-        </div>
-      </div>
-
+      <BottomNav />
     </div>
-
-    <BottomNav />
   </div>
 </template>

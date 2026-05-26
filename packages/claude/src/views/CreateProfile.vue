@@ -28,12 +28,12 @@ function createProfile() {
     return
   }
 
-  const profile = profilesStore.createProfile(
+  const profile = profilesStore.add(
     newName.value.trim(),
     newAvatar.value,
   )
 
-  progressStore.initProfile(profile.id)
+  progressStore.init(profile.id)
   profilesStore.select(profile.id)
   appStore.navigate('dashboard')
 }
@@ -56,7 +56,7 @@ function createProfile() {
       <!-- Back -->
       <div class="pt-2">
         <button
-          @click="appStore.navigate('profile')"
+          @click="appStore.navigate('profiles')"
           class="text-sm font-bold text-slate-500 transition-colors hover:text-slate-700"
         >
           ← Retour

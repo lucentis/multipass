@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useAppStore } from '@/stores/app.store'
 import type { Screen } from '@/types/app'
+import { House, Trophy, Cog, type LucideIcon } from '@lucide/vue'
 
 const appStore = useAppStore()
 
-const items: Array<{ screen: Screen; label: string; icon: string }> = [
-  { screen: 'dashboard', label: 'Accueil', icon: '🏠' },
-  { screen: 'progress', label: 'Progrès', icon: '📊' },
+const items: Array<{ screen: Screen; label: string; icon: LucideIcon }> = [
+  { screen: 'dashboard', label: 'Accueil', icon: House },
+  { screen: 'progress', label: 'Progrès', icon: Trophy },
+  { screen: 'settings', label: 'Règlages', icon: Cog },
 ]
 </script>
 
@@ -18,13 +20,15 @@ const items: Array<{ screen: Screen; label: string; icon: string }> = [
         :key="item.screen"
         @click="appStore.navigate(item.screen)"
         :class="[
-          'flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] transition-colors',
+          'flex flex-1 flex-col items-center gap-1 py-2 text-[11px] transition-colors',
           appStore.currentScreen === item.screen
-            ? 'text-teal-700'
+            ? 'text-amber-700'
             : 'text-muted-foreground hover:text-foreground',
         ]"
       >
-        <span class="text-xl">{{ item.icon }}</span>
+        <span class="text-xl">
+          <component :is="item.icon"></component>
+        </span>
         {{ item.label }}
       </button>
     </div>

@@ -96,10 +96,9 @@ function confirmDelete(): void {
     >
       <span class="text-3xl leading-none">{{ profilesStore.activeProfile?.avatar }}</span>
       <div class="text-left">
-        <p class="text-sm font-medium leading-none text-foreground mb-1.5">
+        <p class="text-xl font-bold leading-none text-amber-800 mb-1.5">
           {{ profilesStore.activeProfile?.name }}
         </p>
-        <slot name="xp-bar" />
       </div>
     </button>
 
@@ -108,6 +107,18 @@ function confirmDelete(): void {
       v-if="menuOpen"
       class="absolute left-0 top-full z-50 mt-1 w-52 overflow-hidden rounded-xl border border-border bg-background shadow-md"
     >
+      <button
+        @click="appStore.navigate('profiles')"
+        class="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-muted"
+      >
+        <span class="text-base">
+          👥
+        </span>
+
+        <span>
+          Profiles
+        </span>
+      </button>
       <button
         @click="openEdit"
         class="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-muted"

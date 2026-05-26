@@ -6,3 +6,4 @@ export type Screen =
   | 'discover'
   | 'practice'
   | 'progress'
+  | 'settings'
