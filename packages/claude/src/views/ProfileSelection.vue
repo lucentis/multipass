@@ -66,7 +66,7 @@ function xpToPercent(xp: number): number {
             v-for="profile in profilesStore.profiles"
             :key="profile.id"
             @click="selectProfile(profile.id)"
-            class="rounded-lg bg-white px-2 py-4 text-center shadow-[0_3px_10px_rgba(0,0,0,0.07)] border"
+            class="rounded-lg bg-white px-2 py-2 text-center shadow-[0_3px_10px_rgba(0,0,0,0.07)] border"
           >
             <!-- Avatar -->
             <div
@@ -78,12 +78,12 @@ function xpToPercent(xp: number): number {
             </div>
 
             <!-- Name -->
-            <p class="mb-1 text-lg font-extrabold text-amber-800">
+            <p class="text-lg font-extrabold text-amber-800">
               {{ profile.name }}
             </p>
 
             <!-- XP Bar -->
-            <div class="mx-[2px] mb-2 mt-[5px] h-2 rounded-full bg-slate-100">
+            <div class="mx-[2px] mb-1 mt-[5px] h-2 rounded-full bg-slate-100">
               <div
                 class="h-2 rounded-full bg-amber-500 transition-all"
                 :style="{ width: xpToPercent(profile.xp) + '%' }"
@@ -91,7 +91,7 @@ function xpToPercent(xp: number): number {
             </div>
 
             <!-- Footer -->
-            <div class="flex justify-between px-[2px]">
+            <div class="flex justify-between items-center px-[2px]">
               <span class="text-xs font-bold text-slate-500">
                 {{ profile.xp }} XP
               </span>
